@@ -1,4 +1,4 @@
-WITH email_metrics AS (  -- у даному запиті я порахував всі агрегатні ф-ції, які стосуються email (я поділив запит на дві частини де в першій рахував всі мтрики по листам, а в другій всі метрики по акаунтам).
+WITH email_metrics AS (  -- in this query, I counted all aggregate functions related to email (I split the query into two parts: in the first part, I counted all metrics for emails, and in the second part, I counted all metrics for accounts).
    SELECT
        DATE_ADD(s.date, INTERVAL es.sent_date DAY) AS date,
        sp.country,
@@ -25,7 +25,7 @@ WITH email_metrics AS (  -- у даному запиті я порахував �
 ),
 
 
-account_metrics AS (  -- цей етап мав абсолютно такуж логігу як і частина з розрахунками для листів
+account_metrics AS (  -- this stage followed exactly the same logic as the section with the calculations for the letters
    SELECT
        s.date,
        sp.country,
@@ -44,7 +44,7 @@ account_metrics AS (  -- цей етап мав абсолютно такуж л
 ),
 
 
-union_data AS ( --в цій частині я вже об`єднував cte які відносяться до листів з cte які відносяться до акаунтів
+union_data AS ( -- in this section, I have already combined the CTEs related to emails with the CTEs related to accounts
    SELECT
        date,
        country,
@@ -75,7 +75,7 @@ union_data AS ( --в цій частині я вже об`єднував cte я�
 ),
 
 
-merged AS (  -- в цьому cte я назад об'єднав всі рядки, щоб не залишалося пустих значеннь NULL, які не коректно вплинуть на результат після обчисленнь віконних ф-цій
+merged AS (  -- in this CTE, I concatenated all the rows again to ensure there were no NULL values left, which would incorrectly affect the result after the window functions are evaluated.
    SELECT
        date,
        country,
@@ -91,7 +91,7 @@ merged AS (  -- в цьому cte я назад об'єднав всі рядк�
 ),
 
 
-metrics AS (  -- у цьому cte я підрахував загаьну к-ть відправлених листів та к-ть акаунтів у розрізі країн
+metrics AS (  -- in this CTE, I calculated the total number of emails sent and the number of accounts by country
    SELECT
        *,
        SUM(sent_msg)
@@ -106,7 +106,7 @@ metrics AS (  -- у цьому cte я підрахував загаьну к-т�
 ),
 
 
-ranked AS (  --цей cte я виокремлював для підрахунку рейтингу країн та к-ті акаунтів за кількістю створених акаунтів
+ranked AS (  -- I isolated this CTE to calculate country rankings and the number of accounts based on the number of accounts created
    SELECT
        *,
        DENSE_RANK()
@@ -121,7 +121,7 @@ ranked AS (  --цей cte я виокремлював для підрахунк�
 )
 
 
-SELECT *   -- у фінальному cte я відфільтрував усі дані де попадють країни або акаунти з рейтингом, який менше або дорівнює 10 та вивів всі потрібні колонки
+SELECT *   -- in the final CTE, I filtered out all data containing countries or accounts with a rating less than or equal to 10 and returned all the necessary columns
 FROM ranked
 WHERE rank_total_country_sent_cnt <= 10
  or rank_total_country_account_cnt <= 10
